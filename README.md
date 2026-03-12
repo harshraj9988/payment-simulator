@@ -2,7 +2,7 @@
 
 A backend service that simulates a simple **payment system** with account management and transaction lifecycle handling.
 
-This project is being built to explore **backend system design, REST APIs, and client–server architecture**, while integrating with a sample Android client.
+This project is being built to explore **backend system design, REST APIs, and client–server architecture and idempotent request handling**, while integrating with a sample Android client.
 
 🚧 **Currently in progress**
 
@@ -10,21 +10,24 @@ This project is being built to explore **backend system design, REST APIs, and c
 
 ## 🚀 Features
 
-### Current capabilities
+### Account Management
 
-- Create accounts via REST API
-- Layered backend architecture (Controller → Service → Repository)
-- DTO-based request/response handling
-- Clean separation of domain entities
-- RESTful API design using Spring Boot
+- Create accounts
+- Fetch account details
 
-### Upcoming features
+### Transaction Processing
 
-- Payment transaction lifecycle management
-- Idempotent payment APIs
-- Transaction status tracking
-- Retry logic for payment processing
-- Android client integration
+- Deposit money into an account
+- Withdraw money from an account
+- Transfer money between accounts
+
+### Reliability & Safety
+
+- Idempotent transaction APIs using idempotency keys
+- Atomic transactions using Spring ```@Transactional```
+- Centralized error handling via ```@ControllerAdvice```
+- Validation using Jakarta Bean Validation
+- Transaction ledger to persist financial history
 
 ---
 
@@ -63,21 +66,39 @@ payment-simulator
 │
 ├── controller
 │   └── AccountController.java
+│   └── TransactionController.java
 │
 ├── service
+│   └── impl
+│   │  └── AccountServiceImpl.java
+│   │  └── TransactionServiceImpl.java
+│   │ 
 │   └── AccountService.java
+│   └── TransactionService.java
 │
 ├── repository
 │   └── AccountRepository.java
+│   └── TransactionRepository.java
 │
 ├── entity
 │   └── Account.java
+│   └── Transaction.java
 │
 ├── dto
 │   └── AccountDto.java
+│   └── TransactionRequestDto.java
+│   └── AmountRequestDto.java
 │
 ├── mapper
 │   └── AccountMapper.java
+│   └── TransactionMapper.java
+│
+├── exception
+│   └── GlobalExceptionHandler.java
+│   └── AccountNotFoundException.java
+│   └── DuplicateTransactionException.java
+│   └── InvalidTransactionException.java
+│   └── InsufficientFundsException.java
 │
 └── PaymentSimulatorApplication.java
 ```
@@ -113,27 +134,140 @@ POST /api/accounts
 
 ---
 
+## 💰 Transaction APIs
+
+### Deposit
+
+```
+PUT /api/transactions/deposit
+```
+
+### Request Body
+
+```json
+{
+  "accountId": 1,
+  "amount": 500,
+  "idempotencyKey": "txn-1"
+}
+```
+
+### Response
+
+```json
+{
+  "id": 1,
+  "accountId": 1,
+  "amount": 500,
+  "idempotencyKey": "txn-1"
+}
+```
+
+---
+### Withdraw
+
+```
+PUT /api/transactions/withdraw
+```
+
+### Request Body
+
+```json
+{
+  "accountId": 1,
+  "amount": 500,
+  "idempotencyKey": "txn-1"
+}
+```
+
+### Response
+
+```json
+{
+  "id": 1,
+  "accountId": 1,
+  "amount": 500,
+  "idempotencyKey": "txn-1"
+}
+```
+
+---
+### Transfer
+
+```
+PUT /api/transactions/transfer
+```
+
+### Request Body
+
+```json
+{
+  "sourceAccountId": 1,
+  "targetAccountId": 2,
+  "amount": 500,
+  "idempotencyKey": "txn-1"
+}
+```
+
+### Response
+
+```json
+{
+  "id": 1,
+  "sourceAccountId": 1,
+  "targetAccountId": 2,
+  "amount": 500,
+  "idempotencyKey": "txn-1"
+}
+```
+---
+
+### 🔐 Idempotent Transactions
+
+All transaction APIs require an idempotency key.
+
+If the same request is retried with the same key, the system detects it and prevents duplicate processing.
+
+This is commonly used in payment systems to protect against network retries or client crashes.
+
+---
+
+### ⚠️ Error Handling
+
+The service uses centralized exception handling with @ControllerAdvice.
+
+Errors are returned in a consistent structure:
+
+```json
+{
+  "timestamp": "2026-03-13T21:42:11",
+  "status": 400,
+  "error": "Validation Error",
+  "message": {
+    "amount": "must be greater than 0"
+  },
+  "path": "/api/transactions/transfer"
+}
+```
+Handled scenarios include:
+- Validation errors
+- Account not found
+- Duplicate transactions
+- Insufficient funds
+- Invalid transaction requests
+
+---
+
 ## ⚙️ Tech Stack
 
 - Java
 - Spring Boot
 - Spring Web
 - Spring Data JPA
+- Jakarta Validation
 - Maven
 - REST APIs
-
----
-
-## 🧠 Concepts Explored
-
-This project explores backend engineering concepts such as:
-
-- REST API design
-- Layered service architecture
-- DTO pattern
-- Request/response modeling
-- Idempotent request handling *(planned)*
-- Payment system lifecycle modeling
+- MySQL / H2
 
 ---
 
@@ -178,19 +312,6 @@ The server will start on:
 ```
 http://localhost:8080
 ```
-
----
-
-## 📈 Future Improvements
-
-Planned enhancements:
-
-- Payment entity and transaction APIs
-- Payment status tracking
-- Idempotent payment requests
-- Retry handling
-- Integration testing
-- Docker support
 
 ---
 

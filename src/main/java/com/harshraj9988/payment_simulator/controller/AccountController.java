@@ -3,6 +3,7 @@ package com.harshraj9988.payment_simulator.controller;
 import com.harshraj9988.payment_simulator.dto.AccountDto;
 import com.harshraj9988.payment_simulator.entity.Account;
 import com.harshraj9988.payment_simulator.service.AccountService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.graphql.GraphQlProperties;
 import org.springframework.http.HttpStatus;
@@ -24,7 +25,7 @@ public class AccountController {
 
     // Add account REST API
     @PostMapping
-    public ResponseEntity<AccountDto> addAccount(@RequestBody AccountDto accountDto) {
+    public ResponseEntity<AccountDto> addAccount(@Valid @RequestBody AccountDto accountDto) {
        AccountDto addedAccount = accountService.createAccount(accountDto);
        return new ResponseEntity<>(addedAccount, HttpStatus.CREATED);
     }

@@ -12,6 +12,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class AccountDto {
+
     private Long id;
 
     @NotNull(message = "Account name cannot be null")

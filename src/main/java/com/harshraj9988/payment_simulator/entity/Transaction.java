@@ -20,7 +20,7 @@ public class Transaction {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "source_account_i")
+    @Column(name = "source_account_id")
     private Long sourceAccountId;
 
     @Column(name = "target_account_id")

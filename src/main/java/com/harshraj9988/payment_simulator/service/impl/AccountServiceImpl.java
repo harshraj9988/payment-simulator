@@ -2,6 +2,8 @@ package com.harshraj9988.payment_simulator.service.impl;
 
 import com.harshraj9988.payment_simulator.dto.AccountDto;
 import com.harshraj9988.payment_simulator.entity.Account;
+import com.harshraj9988.payment_simulator.exception.AccountNotFoundException;
+import com.harshraj9988.payment_simulator.exception.InsufficientFundsException;
 import com.harshraj9988.payment_simulator.mapper.AccountMapper;
 import com.harshraj9988.payment_simulator.repository.AccountRepository;
 import com.harshraj9988.payment_simulator.service.AccountService;
@@ -28,17 +30,7 @@ public class AccountServiceImpl implements AccountService {
     @Override
     public AccountDto getAccountById(Long id) {
         Account account = accountRepository
-                .findById(id).orElseThrow(() -> new RuntimeException("Account does not exist"));
+                .findById(id).orElseThrow(() -> new AccountNotFoundException("Account does not exist. id: " + id));
         return AccountMapper.mapToAccountDto(account);
-    }
-
-    @Override
-    public AccountDto deposit(Long id, Double amount) {
-        Account account = accountRepository
-                .findById(id).orElseThrow(() -> new RuntimeException("Account does not exist"));
-        Double total = account.getBalance() + amount;
-        account.setBalance(total);
-        Account savedAccount = accountRepository.save(account);
-        return AccountMapper.mapToAccountDto(savedAccount);
     }
 }

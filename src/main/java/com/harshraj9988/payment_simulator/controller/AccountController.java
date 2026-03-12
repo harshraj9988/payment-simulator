@@ -3,6 +3,7 @@ package com.harshraj9988.payment_simulator.controller;
 import com.harshraj9988.payment_simulator.dto.AccountDto;
 import com.harshraj9988.payment_simulator.entity.Account;
 import com.harshraj9988.payment_simulator.service.AccountService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.graphql.GraphQlProperties;
 import org.springframework.http.HttpStatus;
@@ -15,7 +16,7 @@ import java.util.Map;
 @RequestMapping("/api/accounts")
 public class AccountController {
 
-   private AccountService accountService;
+   private final AccountService accountService;
 
    @Autowired
     public AccountController(AccountService accountService) {
@@ -24,7 +25,7 @@ public class AccountController {
 
     // Add account REST API
     @PostMapping
-    public ResponseEntity<AccountDto> addAccount(@RequestBody AccountDto accountDto) {
+    public ResponseEntity<AccountDto> addAccount(@Valid @RequestBody AccountDto accountDto) {
        AccountDto addedAccount = accountService.createAccount(accountDto);
        return new ResponseEntity<>(addedAccount, HttpStatus.CREATED);
     }
@@ -34,13 +35,5 @@ public class AccountController {
     public ResponseEntity<AccountDto> getAccountById(@PathVariable Long id) {
        AccountDto account = accountService.getAccountById(id);
         return ResponseEntity.ok(account);
-    }
-
-    // Deposit REST API
-    @PutMapping("/{id}/deposit")
-    public ResponseEntity<AccountDto> deposit(@PathVariable Long id, @RequestBody Map<String, Double> request) {
-       Double amount = request.get("amount");
-       AccountDto accountDto = accountService.deposit(id, amount);
-       return ResponseEntity.ok(accountDto);
     }
 }
